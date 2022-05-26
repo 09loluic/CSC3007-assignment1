@@ -1,0 +1,90 @@
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.0/css/jquery.dataTables.min.css">
+</head>
+<body>
+
+</body>
+</html>
+<style>
+    table.dataTable tbody tr:hover {
+   background-color:#71d1eb !important;
+}
+</style>
+<script>
+    //
+  $(document).ready(function(){
+   
+
+        setTimeout(loadData(), 10000)
+
+})
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+    function loadData(){
+
+        var title = '<h2 style="text-align:center">Last Updated '
+        var th = '<table id="time-table"><thead><tr><th>Metric </th>'
+        var tr = '<tbody>';
+        var month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+
+        $.ajax({
+                
+            type: "GET",
+                url: "https://api.data.gov.sg/v1/environment/psi",
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+
+                var d = new Date(response["items"][0]["update_timestamp"]);
+                var date = d.getDate() + " " + month[d.getMonth()] + " " + d.getFullYear();
+                var time = d.toLocaleTimeString().toLowerCase();
+                    title += date + ', ' +time+ '</h2>'
+                var mainData = response["items"][0]["readings"] ;
+                var count = 0;
+               
+                $.each(mainData, function(key,value) {
+                   
+                    tr += '<tr><td>' + key + '</td>'
+                    $.each(value, function(keys,values){
+
+                        if(count == 0)
+                        {
+
+                            th += '<th>' +  keys.split(' ').map(capitalize).join(' '); + '</th>'  
+                        }
+                        
+                        tr += '<td>' + values+ '</td>'
+                       
+                    });
+           
+
+                    tr += '</tr>'
+                    count++;
+                }); 
+                
+                th += '</tr></thead>'
+                tr += '</tbody></table>'
+                
+                $( "body" ).append(title+th + tr);
+
+                var table = $('#time-table').DataTable({
+                "bInfo": false,
+                "bLengthChange": false,
+                "bFilter": false,
+                "pageLength": 50
+            });
+
+                },
+                failure: function (response) {
+                    alert(response);
+                }
+            });
+         
+        }
+</script>
